@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — ReviewAI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .dash-header { margin-bottom: 28px; }
+    .dash-header h1 { font-size: 1.6rem; font-weight: 900; margin-bottom: 4px; }
+    .dash-header p { color: var(--muted); font-size: .9rem; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-header h2 { font-size: 1rem; font-weight: 800; }
+    .reviews-list { display: flex; flex-direction: column; gap: 12px; }
+    .connect-step { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--bg2); border-radius: 10px; margin-bottom: 10px; }
+    .connect-step-num { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--purple), var(--cyan)); display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 800; flex-shrink: 0; }
+    .connect-step-text h4 { font-size: .9rem; font-weight: 700; margin-bottom: 3px; }
+    .connect-step-text p { font-size: .82rem; color: var(--muted); }
+    .google-btn { background: #fff; color: #1a1a1a; border: 1px solid #ddd; display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: .9rem; cursor: pointer; transition: all .2s; font-family: inherit; }
+    .google-btn:hover { box-shadow: 0 4px 20px #00000033; transform: translateY(-1px); }
+    .connected-badge { display: inline-flex; align-items: center; gap: 6px; background: #10b98118; border: 1px solid #10b98133; color: #34d399; padding: 6px 14px; border-radius: 99px; font-size: .82rem; font-weight: 700; }
+    .progress-bar { background: var(--bg2); border-radius: 99px; height: 6px; margin-top: 8px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--purple), var(--cyan)); transition: width 1s ease; }
+    .notification-box { background: linear-gradient(135deg, #7c3aed0d, #06b6d40d); border: 1px solid #7c3aed22; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .notification-icon { font-size: 1.8rem; }
+    .notification-text h4 { font-size: .9rem; font-weight: 700; margin-bottom: 2px; }
+    .notification-text p { font-size: .82rem; color: var(--muted); }
+    .tab-bar { display: flex; gap: 4px; background: var(--bg2); padding: 4px; border-radius: 10px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 9px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-size: .85rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .2s; }
+    .tab-btn.active { background: var(--card); color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-icon">⭐</div>
+      <span class="nav-logo-text">Review<span>AI</span></span>
+    </a>
+    <div class="nav-links" style="gap:16px">
+      <span id="nav-user" style="color:var(--muted);font-size:.85rem"></span>
+      <button onclick="logout()" class="btn btn-ghost btn-sm">Salir</button>
+    </div>
+  </div>
+</nav>
+
+<div class="dash-layout">
+  <!-- SIDEBAR -->
+  <aside class="dash-sidebar">
+    <a class="dash-nav-item active" onclick="showTab('overview')">
+      <span class="dash-nav-icon">📊</span> Resumen
+    </a>
+    <a class="dash-nav-item" onclick="showTab('reviews')">
+      <span class="dash-nav-icon">⭐</span> Reseñas
+    </a>
+    <a class="dash-nav-item" onclick="showTab('connect')">
+      <span class="dash-nav-icon">🔗</span> Conectar Google
+    </a>
+    <a class="dash-nav-item" onclick="showTab('settings')">
+      <span class="dash-nav-icon">⚙️</span> Configuración
+    </a>
+    <div class="dash-nav-divider"></div>
+    <a class="dash-nav-item" onclick="showTab('plan')">
+      <span class="dash-nav-icon">💳</span> Mi plan
+    </a>
+    <a class="dash-nav-item" onclick="logout()">
+      <span class="dash-nav-icon">🚪</span> Salir
+    </a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+
+    <!-- TAB: OVERVIEW -->
+    <div id="tab-overview">
+      <div class="dash-header">
+        <h1>¡Bienvenido! 👋</h1>
+        <p id="dash-subtitle">Mirá cómo tu reputación mejora automáticamente</p>
+      </div>
+
+      <div class="notification-box">
+        <div class="notification-icon">🚀</div>
+        <div class="notification-text">
+          <h4>Empezá en 3 minutos</h4>
+          <p>Conectá tu Google Business y la IA empieza a responder tus reseñas sola.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showTab('connect')" style="margin-left:auto;flex-shrink:0">Conectar →</button>
+      </div>
+
+      <!-- STATS -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Reseñas respondidas</div>
+          <div class="stat-value stat-purple">4</div>
+          <div class="stat-sub">↑ Este mes</div>
+          <div class="progress-bar" style="margin-top:12px"><div class="progress-fill" style="width:40%"></div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rating actual</div>
+          <div class="stat-value stat-yellow">⭐ 4.2</div>
+          <div class="stat-sub">↑ +0.4 desde que empezaste</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tiempo ahorrado</div>
+          <div class="stat-value stat-green">3.2hs</div>
+          <div class="stat-sub">Este mes en respuestas manuales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Días de prueba</div>
+          <div class="stat-value stat-blue">7</div>
+          <div class="stat-sub">Quedan en tu trial gratis</div>
+        </div>
+      </div>
+
+      <!-- ÚLTIMAS RESEÑAS -->
+      <div class="section-header">
+        <h2>⭐ Últimas reseñas respondidas</h2>
+        <button class="btn btn-ghost btn-sm" onclick="showTab('reviews')">Ver todas →</button>
+      </div>
+      <div id="overview-reviews"></div>
+    </div>
+
+    <!-- TAB: REVIEWS -->
+    <div id="tab-reviews" style="display:none">
+      <div class="dash-header">
+        <h1>⭐ Reseñas respondidas</h1>
+        <p>Todas las reseñas que la IA respondió automáticamente</p>
+      </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="filterReviews('all', this)">Todas</button>
+        <button class="tab-btn" onclick="filterReviews('5', this)">⭐⭐⭐⭐⭐</button>
+        <button class="tab-btn" onclick="filterReviews('low', this)">⭐⭐ o menos</button>
+      </div>
+      <div id="all-reviews" class="reviews-list"></div>
+    </div>
+
+    <!-- TAB: CONNECT -->
+    <div id="tab-connect" style="display:none">
+      <div class="dash-header">
+        <h1>🔗 Conectar Google Business</h1>
+        <p>Conectá tu cuenta de Google para que la IA empiece a responder</p>
+      </div>
+
+      <div id="connect-form-area">
+        <div class="connect-card" style="text-align:left; padding:28px; background:var(--card); border:1px solid var(--border); border-radius:20px; margin-bottom:20px">
+          <h3 style="margin-bottom:20px">¿Cómo funciona la conexión?</h3>
+          <div class="connect-step">
+            <div class="connect-step-num">1</div>
+            <div class="connect-step-text">
+              <h4>Ingresás el nombre de tu negocio</h4>
+              <p>Así la IA sabe cómo llamar a tu negocio en las respuestas.</p>
+            </div>
+          </div>
+          <div class="connect-step">
+            <div class="connect-step-num">2</div>
+            <div class="connect-step-text">
+              <h4>Conectás con Google (1 click)</h4>
+              <p>Iniciás sesión con tu cuenta de Google que tiene el Google Business Profile.</p>
+            </div>
+          </div>
+          <div class="connect-step">
+            <div class="connect-step-num">3</div>
+            <div class="connect-step-text">
+              <h4>¡Listo! La IA empieza a trabajar</h4>
+              <p>Cada reseña nueva recibe una respuesta automática en minutos.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="connect-form" style="max-width:480px">
+          <div class="form-group">
+            <label class="form-label">Nombre de tu negocio en Google</label>
+            <input type="text" id="biz-name" class="form-input" placeholder="Ej: Restaurante La Esquina"/>
+            <span class="form-hint">Debe coincidir exactamente con cómo aparece en Google Maps</span>
+          </div>
+          <button class="google-btn" onclick="connectGoogle()" style="margin-bottom:12px; width:100%">
+            <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.4 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.2-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.7 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-3.5-11.2-8.3l-6.5 5C9.7 39.5 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.4 4.3-4.5 5.6l6.2 5.2C41.1 35.2 44 30 44 24c0-1.3-.2-2.7-.4-4z"/></svg>
+            Conectar con Google Business
+          </button>
+          <p style="font-size:.78rem;color:var(--muted);text-align:center">🔒 Conexión segura · Solo lectura y respuesta de reseñas</p>
+        </div>
+
+        <div id="connect-success" style="display:none" class="card" style="max-width:480px">
+          <div style="text-align:center;padding:12px">
+            <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+            <h3 style="margin-bottom:8px">¡Google Business conectado!</h3>
+            <p style="color:var(--muted);font-size:.9rem;margin-bottom:20px">La IA ya está monitoreando tus reseñas y va a responder automáticamente.</p>
+            <div class="connected-badge">✅ Conectado y activo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SETTINGS -->
+    <div id="tab-settings" style="display:none">
+      <div class="dash-header">
+        <h1>⚙️ Configuración</h1>
+        <p>Personalizá cómo responde la IA</p>
+      </div>
+      <div class="card" style="max-width:560px">
+        <div class="form-group">
+          <label class="form-label">Nombre de tu negocio</label>
+          <input type="text" class="form-input" id="settings-biz" placeholder="Ej: Restaurante La Esquina"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de negocio</label>
+          <select class="form-input">
+            <option>🍕 Restaurante / Bar</option>
+            <option>🦷 Clínica / Salud</option>
+            <option>💇 Peluquería / Estética</option>
+            <option>💪 Gimnasio / Fitness</option>
+            <option>🏨 Hotel / Alojamiento</option>
+            <option>🛍️ Tienda / Retail</option>
+            <option>🔧 Servicio técnico</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tono de las respuestas</label>
+          <select class="form-input">
+            <option>😊 Cálido y amigable</option>
+            <option>💼 Profesional</option>
+            <option>🎩 Formal</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Frase de cierre personalizada (opcional)</label>
+          <input type="text" class="form-input" placeholder="Ej: ¡Te esperamos pronto! 🙌"/>
+          <span class="form-hint">La IA la agregará al final de cada respuesta</span>
+        </div>
+        <button class="btn btn-primary" onclick="alert('✅ Configuración guardada!')">Guardar cambios</button>
+      </div>
+    </div>
+
+    <!-- TAB: PLAN -->
+    <div id="tab-plan" style="display:none">
+      <div class="dash-header">
+        <h1>💳 Mi plan</h1>
+        <p>Gestioná tu suscripción</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px">
+        <div class="stat-card" style="grid-column:1/-1">
+          <div class="stat-label">Plan actual</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+            <div>
+              <div class="stat-value" style="font-size:1.4rem">🎁 Trial Gratis</div>
+              <div class="stat-sub">7 días restantes · Sin tarjeta requerida</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="alert('Próximamente: pago con Stripe 💳')">Actualizar plan</button>
+          </div>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">USD 19 <span>/mes</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">50 reseñas/mes</div>
+            <div class="plan-feature">1 negocio</div>
+            <div class="plan-feature">Email semanal</div>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-full" style="margin-top:16px" onclick="alert('Próximamente 💳')">Elegir</button>
+        </div>
+        <div class="plan-card" style="border-color:var(--purple)">
+          <div class="plan-name" style="color:var(--purple2)">⭐ Profesional</div>
+          <div class="plan-price">USD 39 <span>/mes</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">Reseñas ilimitadas</div>
+            <div class="plan-feature">3 negocios</div>
+            <div class="plan-feature">Dashboard analytics</div>
+          </div>
+          <button class="btn btn-primary btn-sm btn-full" style="margin-top:16px" onclick="alert('Próximamente 💳')">Elegir</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+let userData = null;
+let reviewsData = [];
+
+async function init() {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) { window.location.href = '/login.html'; return; }
+    userData = await res.json();
+    document.getElementById('nav-user').textContent = userData.email;
+    document.getElementById('dash-subtitle').textContent = `Hola${userData.business ? ', ' + userData.business : ''}! Mirá cómo tu reputación mejora sola.`;
+    if (userData.business) { document.getElementById('settings-biz').value = userData.business; document.getElementById('biz-name').value = userData.business; }
+
+    const revRes = await fetch('/api/reviews');
+    reviewsData = await revRes.json();
+    renderReviews();
+    if (userData.connected) showConnectedState();
+  } catch (e) { window.location.href = '/login.html'; }
+}
+
+function renderReviews(filter = 'all') {
+  const filtered = reviewsData.filter(r => {
+    if (filter === '5') return r.stars === 5;
+    if (filter === 'low') return r.stars <= 2;
+    return true;
+  });
+  const html = filtered.map(r => reviewCard(r)).join('');
+  const el = document.getElementById('all-reviews');
+  if (el) el.innerHTML = html || '<p style="color:var(--muted);text-align:center;padding:40px">No hay reseñas en esta categoría</p>';
+  const ov = document.getElementById('overview-reviews');
+  if (ov) ov.innerHTML = reviewsData.slice(0,2).map(r => reviewCard(r)).join('');
+}
+
+function reviewCard(r) {
+  const starsHtml = [1,2,3,4,5].map(i => `<span class="star${i > r.stars ? ' empty' : ''}">★</span>`).join('');
+  const initials = r.author.split(' ').map(w=>w[0]).join('').slice(0,2);
+  return `<div class="review-card fade-up">
+    <div class="review-header">
+      <div class="review-author">
+        <div class="review-avatar">${initials}</div>
+        <div>
+          <div class="review-name">${r.author}</div>
+          <div class="review-date">${r.date}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="stars">${starsHtml}</div>
+        <span class="status-badge status-responded">✅ Respondida</span>
+      </div>
+    </div>
+    <div class="review-text">"${r.text}"</div>
+    <div class="review-response">
+      <div class="review-response-label">⭐ Respuesta del propietario (IA)</div>
+      <div class="review-response-text">${r.response}</div>
+    </div>
+  </div>`;
+}
+
+function filterReviews(filter, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReviews(filter);
+}
+
+function showTab(tab) {
+  ['overview','reviews','connect','settings','plan'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.dash-nav-item').forEach(el => el.classList.remove('active'));
+  const tabs = {'overview':0,'reviews':1,'connect':2,'settings':3,'plan':5};
+  const items = document.querySelectorAll('.dash-nav-item');
+  if (tabs[tab] !== undefined) items[tabs[tab]]?.classList.add('active');
+}
+
+async function connectGoogle() {
+  const bizName = document.getElementById('biz-name').value.trim();
+  if (!bizName) { alert('Por favor ingresá el nombre de tu negocio'); return; }
+  const btn = document.querySelector('.google-btn');
+  btn.innerHTML = '<span class="spinner" style="border-top-color:#1a1a1a"></span> Conectando...';
+  btn.disabled = true;
+  await new Promise(r => setTimeout(r, 2000));
+  await fetch('/api/connect-google', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({businessName: bizName}) });
+  showConnectedState();
+}
+
+function showConnectedState() {
+  document.getElementById('connect-form').style.display = 'none';
+  document.getElementById('connect-success').style.display = 'block';
+  document.getElementById('connect-success').style.maxWidth = '480px';
+  const notif = document.querySelector('.notification-box');
+  if (notif) notif.innerHTML = '<div class="notification-icon">✅</div><div class="notification-text"><h4>Google Business conectado</h4><p>La IA está respondiendo tus reseñas automáticamente.</p></div><span class="connected-badge" style="margin-left:auto">Activo</span>';
+}
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>
