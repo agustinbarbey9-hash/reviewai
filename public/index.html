@@ -124,12 +124,56 @@
     .footer-bottom { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border); }
     .footer-bottom p { font-size: .8rem; color: var(--muted); }
 
+    /* ── INDUSTRIES ── */
+    .industries-section { padding: 48px 24px; background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .industries-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+    .industries-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-bottom: 24px; }
+    .industries-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    .industry-chip { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 99px; padding: 10px 20px; font-size: .88rem; font-weight: 600; transition: all .2s; cursor: default; }
+    .industry-chip:hover { border-color: var(--purple); background: #7c3aed11; transform: translateY(-2px); }
+
+    /* ── INCLUDED IN ALL ── */
+    .included-section { max-width: 1100px; margin: 60px auto 0; padding: 0 24px; }
+    .included-card { background: linear-gradient(135deg, #7c3aed0a, #06b6d40a); border: 1px solid #7c3aed22; border-radius: 20px; padding: 48px; }
+    .included-card h3 { font-size: 1.3rem; font-weight: 900; text-align: center; margin-bottom: 32px; }
+    .included-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .included-item { display: flex; align-items: center; gap: 12px; font-size: .9rem; }
+    .included-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--purple), var(--cyan)); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+    /* ── COMPARISON TABLE ── */
+    .compare-section { max-width: 1100px; margin: 80px auto 0; padding: 0 24px; }
+    .compare-section h3 { font-size: 1.5rem; font-weight: 900; text-align: center; margin-bottom: 32px; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    .compare-table th { padding: 16px; font-weight: 800; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); border-bottom: 2px solid var(--border); }
+    .compare-table th.featured-col { color: var(--purple2); }
+    .compare-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--muted); }
+    .compare-table td:first-child { color: var(--text); font-weight: 500; }
+    .compare-table td.featured-col { background: #7c3aed06; color: var(--text); font-weight: 600; }
+    .compare-table tr:hover td { background: var(--bg2); }
+    .compare-table tr:hover td.featured-col { background: #7c3aed0d; }
+    .check { color: var(--green); font-weight: 700; font-size: 1rem; }
+    .cross { color: #444; }
+    .compare-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+
+    /* ── FAQ ── */
+    .faq-section { max-width: 800px; margin: 0 auto; padding: 100px 24px; }
+    .faq-section h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 900; text-align: center; margin-bottom: 48px; }
+    .faq-list { display: flex; flex-direction: column; gap: 12px; }
+    .faq-item { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .2s; }
+    .faq-item:hover { border-color: var(--purple); }
+    .faq-question { width: 100%; background: none; border: none; color: var(--text); font-family: inherit; font-size: .95rem; font-weight: 700; padding: 20px 24px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .faq-arrow { font-size: 1.2rem; transition: transform .3s; flex-shrink: 0; color: var(--muted); }
+    .faq-item.open .faq-arrow { transform: rotate(45deg); color: var(--purple2); }
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height .4s ease, padding .3s; padding: 0 24px; color: var(--muted); font-size: .9rem; line-height: 1.8; }
+    .faq-item.open .faq-answer { max-height: 300px; padding: 0 24px 20px; }
+
     @media (max-width: 900px) {
-      .demo-grid, .steps-grid, .pricing-grid, .test-grid { grid-template-columns: 1fr; }
+      .demo-grid, .steps-grid, .pricing-grid, .test-grid, .included-grid { grid-template-columns: 1fr; }
       .steps-grid::before { display: none; }
       .price-card.featured { transform: none; }
       .demo-left { position: static; }
       .demo-controls { grid-template-columns: 1fr; }
+      .compare-section { overflow-x: auto; }
     }
   </style>
 </head>
@@ -189,6 +233,25 @@
     <div class="stat-item">
       <div class="stat-num">48hs</div>
       <div class="stat-desc">Tiempo promedio de respuesta anterior → ahora: 2 min</div>
+    </div>
+  </div>
+</div>
+
+<!-- INDUSTRIES STRIP -->
+<div class="industries-section">
+  <div class="industries-inner">
+    <div class="industries-label">Usado por negocios de todo tipo en Latinoamérica</div>
+    <div class="industries-grid">
+      <div class="industry-chip">🍕 Restaurantes y bares</div>
+      <div class="industry-chip">🦷 Clínicas y salud</div>
+      <div class="industry-chip">💇 Peluquerías y estética</div>
+      <div class="industry-chip">💪 Gimnasios y fitness</div>
+      <div class="industry-chip">🏨 Hoteles y alojamiento</div>
+      <div class="industry-chip">🛍️ Tiendas y retail</div>
+      <div class="industry-chip">🔧 Servicios técnicos</div>
+      <div class="industry-chip">🏫 Educación y academias</div>
+      <div class="industry-chip">🚗 Talleres y automotriz</div>
+      <div class="industry-chip">🐾 Veterinarias</div>
     </div>
   </div>
 </div>
@@ -377,6 +440,106 @@
   </div>
 </section>
 
+<!-- INCLUIDO EN TODOS LOS PLANES -->
+<div class="included-section">
+  <div class="included-card">
+    <h3>✅ Incluido en todos los planes</h3>
+    <div class="included-grid">
+      <div class="included-item"><div class="included-icon">🎁</div><span>7 días gratis sin tarjeta de crédito</span></div>
+      <div class="included-item"><div class="included-icon">🚫</div><span>Sin contratos ni permanencia mínima</span></div>
+      <div class="included-item"><div class="included-icon">❌</div><span>Cancelá en cualquier momento con 1 click</span></div>
+      <div class="included-item"><div class="included-icon">🔒</div><span>Datos 100% seguros y encriptados</span></div>
+      <div class="included-item"><div class="included-icon">⚡</div><span>Configuración en menos de 3 minutos</span></div>
+      <div class="included-item"><div class="included-icon">🇦🇷</div><span>Soporte en español latinoamericano</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLA DE COMPARACIÓN -->
+<div class="compare-section">
+  <h3>¿Qué incluye cada plan?</h3>
+  <div class="compare-table-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th style="text-align:left;width:40%">Funcionalidad</th>
+          <th>Starter<br/><span style="font-size:.95rem;color:var(--text);text-transform:none;letter-spacing:0;font-weight:700">USD 19/mes</span></th>
+          <th class="featured-col">⭐ Profesional<br/><span style="font-size:.95rem;text-transform:none;letter-spacing:0;font-weight:700">USD 39/mes</span></th>
+          <th>Agencia<br/><span style="font-size:.95rem;color:var(--text);text-transform:none;letter-spacing:0;font-weight:700">USD 99/mes</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Reseñas respondidas/mes</td>
+          <td>50</td>
+          <td class="featured-col">Ilimitadas</td>
+          <td>Ilimitadas</td>
+        </tr>
+        <tr>
+          <td>Negocios conectados</td>
+          <td>1</td>
+          <td class="featured-col">3</td>
+          <td>Ilimitados</td>
+        </tr>
+        <tr>
+          <td>Idiomas disponibles</td>
+          <td>Español</td>
+          <td class="featured-col">Español + Inglés</td>
+          <td>Multi-idioma</td>
+        </tr>
+        <tr>
+          <td>Tono de respuesta personalizado</td>
+          <td><span class="cross">✗</span></td>
+          <td class="featured-col"><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Frase de cierre personalizada</td>
+          <td><span class="cross">✗</span></td>
+          <td class="featured-col"><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Dashboard con analytics</td>
+          <td>Básico</td>
+          <td class="featured-col">Completo</td>
+          <td>Avanzado</td>
+        </tr>
+        <tr>
+          <td>Reportes por email</td>
+          <td>Semanal</td>
+          <td class="featured-col">Diario</td>
+          <td>Tiempo real</td>
+        </tr>
+        <tr>
+          <td>Múltiples sucursales</td>
+          <td><span class="cross">✗</span></td>
+          <td class="featured-col"><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Acceso a API</td>
+          <td><span class="cross">✗</span></td>
+          <td class="featured-col"><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>White label (tu marca)</td>
+          <td><span class="cross">✗</span></td>
+          <td class="featured-col"><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Soporte</td>
+          <td>Email</td>
+          <td class="featured-col">Email prioritario</td>
+          <td>Soporte dedicado</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <!-- TESTIMONIALS -->
 <section class="test-section">
   <div class="badge badge-yellow" style="margin-bottom:12px">⭐ Historias reales</div>
@@ -405,6 +568,56 @@
         <div class="test-avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4)">AP</div>
         <div><div class="test-name">Ana P.</div><div class="test-role">Cadena Spa & Estética · Madrid</div></div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="badge badge-purple" style="margin-bottom:16px;display:block;text-align:center">❓ Preguntas frecuentes</div>
+  <h2>Todo lo que querés<br/><span class="gradient-text">saber antes de empezar</span></h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        ¿Necesito darle acceso a mi contraseña de Google?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-answer">No. Nunca. Usamos el sistema oficial de OAuth de Google — el mismo que usa Gmail o Google Drive. Vos autorizás con un click y podés revocar el acceso cuando quieras desde tu cuenta de Google.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        ¿Las respuestas suenan robóticas o artificiales?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-answer">Para nada. Usamos IA de última generación (el mismo modelo que usa ChatGPT) con instrucciones específicas para sonar humano, cálido y adaptado al tipo de negocio. Probá el demo gratis y comprobalo vos mismo.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        ¿Qué pasa si quiero cancelar?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-answer">Cancelás con 1 click desde tu dashboard, en cualquier momento, sin llamadas ni formularios. No hay penalidades, no hay compromisos. Si cancelás antes del fin del mes, seguís teniendo acceso hasta que vence.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        ¿Funciona para cualquier tipo de negocio?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-answer">Sí, siempre que tengas un perfil en Google Business (Google Maps). Funciona para restaurantes, clínicas, hoteles, peluquerías, gimnasios, talleres mecánicos, veterinarias, y cualquier negocio local con reseñas en Google.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        ¿Puedo revisar o editar las respuestas antes de que se publiquen?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-answer">En el plan actual, las respuestas se publican automáticamente (eso es lo que te ahorra tiempo). En los próximos meses vamos a agregar el modo "revisión previa" para quienes quieran aprobar cada respuesta antes de publicarla.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        ¿Qué pasa si recibo una reseña falsa o muy injusta?
+        <span class="faq-arrow">+</span>
+      </button>
+      <div class="faq-answer">La IA responde de forma profesional y empática, sin entrar en confrontaciones. Además, desde el dashboard vas a poder ver todas las respuestas generadas y reportar reseñas problemáticas directamente a Google.</div>
     </div>
   </div>
 </section>
@@ -538,6 +751,14 @@ function copyResponse() {
 
 // Cargar primer ejemplo al inicio
 loadExample(0);
+
+// FAQ toggle
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
 </script>
 </body>
 </html>
