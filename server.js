@@ -5,6 +5,7 @@ const session = require('express-session');
 const Groq = require('groq-sdk');
 const path = require('path');
 const { MercadoPagoConfig, PreApproval } = require('mercadopago');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
@@ -17,11 +18,53 @@ app.use(session({
   cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 
+// ── GROQ ──────────────────────────────────────────────
 const GROQ_KEY = process.env.GROQ_API_KEY;
-if (!GROQ_KEY) { console.error('❌ Falta GROQ_API_KEY en las variables de entorno'); process.exit(1); }
+if (!GROQ_KEY) { console.error('❌ Falta GROQ_API_KEY'); process.exit(1); }
 const groq = new Groq({ apiKey: GROQ_KEY });
 
-// MercadoPago
+// ── SUPABASE ──────────────────────────────────────────
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uofrrbokiucittfxrrsf.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+let supabase = null;
+if (SUPABASE_KEY) {
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  console.log('✅ Supabase configurado');
+} else {
+  console.warn('⚠️  SUPABASE_SERVICE_KEY no configurado — usando memoria temporal');
+}
+
+// Fallback en memoria para desarrollo local sin Supabase
+const memUsers = {};
+
+// ── HELPERS SUPABASE ──────────────────────────────────
+async function getUser(email) {
+  if (!supabase) return memUsers[email] || null;
+  const { data } = await supabase.from('users').select('*').eq('email', email).single();
+  return data;
+}
+
+async function createUser(email, password, business) {
+  if (!supabase) {
+    memUsers[email] = { email, password, business: business || '', plan: 'trial', reviews_responded: 0, connected: false, business_name: '', created_at: new Date() };
+    return memUsers[email];
+  }
+  const { data, error } = await supabase.from('users').insert([
+    { email, password, business: business || '', plan: 'trial', reviews_responded: 0, connected: false, business_name: '' }
+  ]).select().single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function updateUser(email, fields) {
+  if (!supabase) {
+    if (memUsers[email]) Object.assign(memUsers[email], fields);
+    return;
+  }
+  await supabase.from('users').update(fields).eq('email', email);
+}
+
+// ── MERCADOPAGO ────────────────────────────────────────
 const MP_TOKEN = process.env.MP_ACCESS_TOKEN;
 let mpClient = null;
 if (MP_TOKEN) {
@@ -37,25 +80,32 @@ const MP_PLANS = {
   agency:   { name: 'ReviewAI Agencia',       amount: 99,  currency_id: 'ARS' }
 };
 
-// In-memory users for MVP (reemplazar con Supabase después)
-const users = {};
-
 // ── AUTH ──────────────────────────────────────────────
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
   const { email, password, business } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Faltan datos' });
-  if (users[email]) return res.status(400).json({ error: 'El email ya está registrado' });
-  users[email] = { email, password, business: business || '', plan: 'trial', reviewsResponded: 0, connected: false, createdAt: new Date() };
-  req.session.user = email;
-  res.json({ success: true });
+  try {
+    const existing = await getUser(email);
+    if (existing) return res.status(400).json({ error: 'El email ya está registrado' });
+    await createUser(email, password, business);
+    req.session.user = email;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-  const user = users[email];
-  if (!user || user.password !== password) return res.status(401).json({ error: 'Email o contraseña incorrectos' });
-  req.session.user = email;
-  res.json({ success: true });
+  try {
+    const user = await getUser(email);
+    if (!user || user.password !== password) return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+    req.session.user = email;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/logout', (req, res) => {
@@ -63,11 +113,17 @@ app.post('/api/logout', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/me', (req, res) => {
+app.get('/api/me', async (req, res) => {
   const email = req.session.user;
-  if (!email || !users[email]) return res.status(401).json({ error: 'No autenticado' });
-  const { password, ...safe } = users[email];
-  res.json(safe);
+  if (!email) return res.status(401).json({ error: 'No autenticado' });
+  try {
+    const user = await getUser(email);
+    if (!user) return res.status(401).json({ error: 'No autenticado' });
+    const { password, ...safe } = user;
+    res.json(safe);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── DEMO PÚBLICA (sin auth) ────────────────────────────
@@ -114,19 +170,21 @@ Respondé SOLO la respuesta, sin explicaciones ni comillas.`;
 });
 
 // ── DASHBOARD: conectar Google (simulado para MVP) ────
-app.post('/api/connect-google', (req, res) => {
+app.post('/api/connect-google', async (req, res) => {
   const email = req.session.user;
-  if (!email || !users[email]) return res.status(401).json({ error: 'No autenticado' });
-  users[email].connected = true;
-  users[email].businessName = req.body.businessName || 'Mi Negocio';
-  res.json({ success: true });
+  if (!email) return res.status(401).json({ error: 'No autenticado' });
+  try {
+    await updateUser(email, { connected: true, business_name: req.body.businessName || 'Mi Negocio' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ── DASHBOARD: simular reseñas respondidas ────────────
+// ── DASHBOARD: reseñas de ejemplo ─────────────────────
 app.get('/api/reviews', (req, res) => {
   const email = req.session.user;
-  if (!email || !users[email]) return res.status(401).json({ error: 'No autenticado' });
-  // Reseñas de ejemplo para el dashboard
+  if (!email) return res.status(401).json({ error: 'No autenticado' });
   res.json([
     { id: 1, author: 'María González', stars: 5, text: 'Excelente servicio, volvería sin dudarlo!', response: 'Muchas gracias María! Nos alegra muchísimo que hayas tenido una gran experiencia. Te esperamos pronto!', date: '2026-04-15', status: 'responded' },
     { id: 2, author: 'Carlos Ruiz', stars: 2, text: 'Esperé 45 minutos y la comida llegó fría.', response: 'Lamentamos mucho tu experiencia Carlos. Eso no refleja nuestros estándares. Te invitamos a contactarnos para compensarte.', date: '2026-04-14', status: 'responded' },
@@ -138,7 +196,7 @@ app.get('/api/reviews', (req, res) => {
 // ── SUSCRIPCIONES MERCADOPAGO ─────────────────────────
 app.post('/api/subscribe', async (req, res) => {
   const email = req.session.user;
-  if (!email || !users[email]) return res.status(401).json({ error: 'No autenticado' });
+  if (!email) return res.status(401).json({ error: 'No autenticado' });
   if (!mpClient) return res.status(503).json({ error: 'Pagos no configurados aún' });
 
   const { plan } = req.body;
