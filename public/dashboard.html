@@ -248,28 +248,28 @@
               <div class="stat-value" style="font-size:1.4rem">🎁 Trial Gratis</div>
               <div class="stat-sub">7 días restantes · Sin tarjeta requerida</div>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="alert('Próximamente: pago con Stripe 💳')">Actualizar plan</button>
+            <button class="btn btn-primary btn-sm" onclick="showTab('plan')">Ver planes →</button>
           </div>
         </div>
         <div class="plan-card">
           <div class="plan-name">Starter</div>
-          <div class="plan-price">USD 19 <span>/mes</span></div>
+          <div class="plan-price">$19 <span>/mes</span></div>
           <div class="plan-features">
             <div class="plan-feature">50 reseñas/mes</div>
             <div class="plan-feature">1 negocio</div>
             <div class="plan-feature">Email semanal</div>
           </div>
-          <button class="btn btn-ghost btn-sm btn-full" style="margin-top:16px" onclick="alert('Próximamente 💳')">Elegir</button>
+          <button class="btn btn-ghost btn-sm btn-full" style="margin-top:16px" onclick="subscribePlan('starter', this)">Elegir plan</button>
         </div>
         <div class="plan-card" style="border-color:var(--purple)">
           <div class="plan-name" style="color:var(--purple2)">⭐ Profesional</div>
-          <div class="plan-price">USD 39 <span>/mes</span></div>
+          <div class="plan-price">$39 <span>/mes</span></div>
           <div class="plan-features">
             <div class="plan-feature">Reseñas ilimitadas</div>
             <div class="plan-feature">3 negocios</div>
             <div class="plan-feature">Dashboard analytics</div>
           </div>
-          <button class="btn btn-primary btn-sm btn-full" style="margin-top:16px" onclick="alert('Próximamente 💳')">Elegir</button>
+          <button class="btn btn-primary btn-sm btn-full" style="margin-top:16px" onclick="subscribePlan('pro', this)">Elegir plan</button>
         </div>
       </div>
     </div>
@@ -368,6 +368,31 @@ function showConnectedState() {
   document.getElementById('connect-success').style.maxWidth = '480px';
   const notif = document.querySelector('.notification-box');
   if (notif) notif.innerHTML = '<div class="notification-icon">✅</div><div class="notification-text"><h4>Google Business conectado</h4><p>La IA está respondiendo tus reseñas automáticamente.</p></div><span class="connected-badge" style="margin-left:auto">Activo</span>';
+}
+
+async function subscribePlan(plan, btn) {
+  const original = btn.textContent;
+  btn.textContent = '⏳ Procesando...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan })
+    });
+    const data = await res.json();
+    if (data.init_point) {
+      window.location.href = data.init_point;
+    } else {
+      alert('Error: ' + (data.error || 'Intentá de nuevo'));
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  } catch (err) {
+    alert('Error de conexión');
+    btn.textContent = original;
+    btn.disabled = false;
+  }
 }
 
 async function logout() {
