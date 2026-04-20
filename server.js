@@ -117,24 +117,56 @@ async function refreshGoogleToken(user) {
   return user.google_access_token;
 }
 
-// Obtener cuentas GBP del usuario
+// Obtener cuentas GBP del usuario (intenta v1 nuevo, fallback a v4 legacy)
 async function getGBPAccounts(accessToken) {
-  const res = await fetch('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
+  // Primero intentar la API nueva (mybusinessaccountmanagement v1)
+  try {
+    const res = await fetch('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const data = await res.json();
+    if (!data.error) return data.accounts || [];
+    console.warn('⚠️  v1 accounts error:', data.error.message, '— intentando v4 legacy...');
+  } catch (e) {
+    console.warn('⚠️  v1 accounts excepción:', e.message);
+  }
+
+  // Fallback: API v4 legacy
+  const res2 = await fetch('https://mybusiness.googleapis.com/v4/accounts', {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
-  const data = await res.json();
-  if (data.error) throw new Error(`GBP Accounts: ${data.error.message}`);
-  return data.accounts || [];
+  const data2 = await res2.json();
+  if (data2.error) throw new Error(`GBP Accounts: ${data2.error.message}`);
+  return data2.accounts || [];
 }
 
-// Obtener locations (negocios) de una cuenta
+// Obtener locations (negocios) de una cuenta (intenta v1, fallback v4)
 async function getGBPLocations(accessToken, accountName) {
-  const res = await fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations?readMask=name,title`, {
+  // Primero intentar API nueva
+  try {
+    const res = await fetch(`https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations?readMask=name,title`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const data = await res.json();
+    if (!data.error) return data.locations || [];
+    console.warn('⚠️  v1 locations error:', data.error.message, '— intentando v4 legacy...');
+  } catch (e) {
+    console.warn('⚠️  v1 locations excepción:', e.message);
+  }
+
+  // Fallback: API v4 legacy
+  const accountId = accountName.split('/')[1] || accountName;
+  const res2 = await fetch(`https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations?pageSize=20`, {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
-  const data = await res.json();
-  if (data.error) throw new Error(`GBP Locations: ${data.error.message}`);
-  return data.locations || [];
+  const data2 = await res2.json();
+  if (data2.error) throw new Error(`GBP Locations: ${data2.error.message}`);
+  // normalizar formato a lo que espera el resto del código
+  const locs = data2.locations || [];
+  return locs.map(l => ({
+    name: l.name,
+    title: l.locationName || l.name?.split('/').pop() || 'Negocio'
+  }));
 }
 
 // Obtener reseñas de una location (API v4)
@@ -464,6 +496,28 @@ app.post('/api/select-business', async (req, res) => {
       business_name: name
     });
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── SETUP MANUAL: ingresar account/location directamente ─
+// El usuario puede encontrar su accountId en business.google.com
+// URL de perfil: https://business.google.com/u/0/edit/l/{locationId}
+// O desde Google Maps → "Tu perfil de empresa" → URL contiene los IDs
+app.post('/api/manual-setup', async (req, res) => {
+  const email = req.session.user;
+  if (!email) return res.status(401).json({ error: 'No autenticado' });
+  const { accountId, locationId, businessName } = req.body;
+  if (!accountId || !locationId) return res.status(400).json({ error: 'Faltan accountId y locationId' });
+  try {
+    await updateUser(email, {
+      gbp_account_id: accountId,
+      gbp_location_id: locationId,
+      business_name: businessName || 'Mi Negocio'
+    });
+    console.log(`✅ Setup manual GBP para ${email}: ${accountId}/${locationId}`);
+    res.json({ success: true, message: 'Negocio configurado correctamente' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
