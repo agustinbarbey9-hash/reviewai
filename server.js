@@ -364,6 +364,15 @@ Respondé SOLO la respuesta, sin comillas.`;
 // ── GOOGLE OAUTH FLOW ─────────────────────────────────
 // ════════════════════════════════════════════════════════
 
+// Guardar nombre de negocio antes del OAuth
+app.post('/api/save-business-name', async (req, res) => {
+  const email = req.session.user;
+  if (!email) return res.status(401).json({ error: 'No autenticado' });
+  const { businessName } = req.body;
+  if (businessName) await updateUser(email, { business: businessName });
+  res.json({ success: true });
+});
+
 app.get('/api/auth/google', (req, res) => {
   if (!req.session.user) return res.redirect('/login.html');
   if (!GOOGLE_CLIENT_ID) return res.status(503).json({ error: 'Google OAuth no configurado' });

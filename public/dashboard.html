@@ -354,12 +354,18 @@ function showTab(tab) {
 async function connectGoogle() {
   const bizName = document.getElementById('biz-name').value.trim();
   if (!bizName) { alert('Por favor ingresá el nombre de tu negocio'); return; }
-  const btn = document.querySelector('.google-btn');
-  btn.innerHTML = '<span class="spinner" style="border-top-color:#1a1a1a"></span> Conectando...';
-  btn.disabled = true;
-  await new Promise(r => setTimeout(r, 2000));
-  await fetch('/api/connect-google', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({businessName: bizName}) });
-  showConnectedState();
+
+  // Guardar el nombre del negocio antes de redirigir
+  try {
+    await fetch('/api/save-business-name', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ businessName: bizName })
+    });
+  } catch(e) { /* continuar igual */ }
+
+  // Redirigir al flujo OAuth real de Google
+  window.location.href = '/api/auth/google';
 }
 
 function showConnectedState() {
